@@ -42,6 +42,11 @@ ul.list li:before{content:"";position:absolute;left:4px;top:10px;width:8px;heigh
 .callout p{color:#22323c;margin-bottom:10px}.callout p:last-child{margin-bottom:0}
 .tags{display:flex;flex-wrap:wrap;gap:10px}
 .tags span{border:1px solid var(--teal);color:var(--teal);border-radius:999px;padding:6px 14px;font-size:14px;font-weight:600}
+.goals{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:8px}
+.goal{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:22px 24px;border-top:4px solid var(--teal)}
+.goal .k{color:var(--teal);font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:12px;margin-bottom:8px}
+.goal p{font-weight:600;color:var(--ink);font-size:17px;line-height:1.4}
+.note{color:var(--mut);font-size:14px;margin-top:14px}
 .more{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:28px}
 .ph{border:2px dashed #c4cbd0;border-radius:14px;padding:40px 28px;color:#8a949c;text-align:center;font-weight:600}
 .about p{color:var(--mut);font-size:19px;max-width:720px;margin-top:16px;font-style:italic}
@@ -50,7 +55,7 @@ footer h2{color:#fff}footer .btns{justify-content:center}
 footer .btn{background:#fff;color:var(--teal)}footer .btn.o{background:transparent;border:2px solid #fff;color:#fff}
 footer small{display:block;margin-top:40px;opacity:.7;font-size:13px}
 @media(max-width:900px){.stats{grid-template-columns:1fr 1fr}.flow{flex-direction:column}.arr{justify-content:center;padding:4px 0;transform:rotate(90deg)}.step{flex-direction:row;justify-content:flex-start;text-align:left;gap:12px}}
-@media(max-width:600px){section{padding:52px 0}.stats,.more{grid-template-columns:1fr}.cs{padding:28px 20px}nav a:not(.logo){margin-left:14px;font-size:14px}.hero{padding:48px 0 32px}.hero p.sub{font-size:18px}.stat b{font-size:38px}.callout{padding:22px 20px}}
+@media(max-width:600px){section{padding:52px 0}.stats,.goals,.more{grid-template-columns:1fr}.cs{padding:28px 20px}nav a:not(.logo){margin-left:14px;font-size:14px}.hero{padding:48px 0 32px}.hero p.sub{font-size:18px}.stat b{font-size:38px}.callout{padding:22px 20px}}
 </style></head><body>
 <div class="wrap"><nav><a class="logo" href="#">[Your Name]</a><div><a href="#case">Work</a><a href="#about">About</a><a href="#contact">Contact</a></div></nav></div>
 <header class="hero"><div class="wrap">
@@ -99,8 +104,33 @@ footer small{display:block;margin-top:40px;opacity:.7;font-size:13px}
 <p>I brought it to leadership with a recommendation to pursue retroactive authorization with the VA and stand up a dedicated recovery process.</p></div>
 <div class="block"><h3>Skills</h3><div class="tags"><span>Payer authorization</span><span>Claims &amp; revenue cycle</span><span>Systems design</span><span>Requirements</span><span>Root-cause analysis</span><span>Cross-functional leadership</span></div></div>
 </div></div></section>
+<section id="voucher"><div class="wrap"><div class="cs">
+<div class="eyebrow">Case study</div>
+<h2>Period-based benefit ledger for payer-funded home care</h2>
+<p class="subt">Product Owner, CareLinx · Wrote the PRD, business rules, and UX requirements across the internal ops dashboard, shift scheduling, invoice payment, caregiver app, and member app.</p>
+<div class="meta"><div><span>Role:</span> <strong>Product Owner</strong></div><div><span>Company:</span> <strong>CareLinx</strong></div><div><span>Domain:</span> <strong>Payer-funded home care</strong></div><div><span>Payers:</span> <strong>VA and commercial health-plan partners</strong></div></div>
+<div class="block"><h3>The problem</h3><p>Voucher balances — the care hours a payer authorizes for a member — were tracked as one cumulative total. The system could not tell whether hours were used inside the right week, month, or year, so it could schedule or pay out more care than a program authorized in a period. Eligibility changes, authorization renewals, and reduced hours were not reflected cleanly in balances, and ops had no reliable data for utilization reporting.</p></div>
+<div class="block"><h3>The goal</h3><p>Tie every balance check and deduction to a time-bound budget envelope that matches each program's frequency, so the system cannot reserve or pay more than is authorized in a period, and balances stay in sync across scheduling and payment.</p></div>
+<div class="block"><h3>What I defined</h3><ul class="list">
+<li><strong>Ledger model.</strong> Each program gets period records (weekly Sun–Sat, monthly, annual split at year-end, or one-time), each starting at the program's authorized hours. Records are created when a member's first job completes, when a new authorization from a VA or commercial health-plan partner starts, and when eligibility is reinstated.</li>
+<li><strong>Journal of every change.</strong> Every credit or debit is a categorized transaction: coverage increase, manual credit, shift paid, coverage loss, or manual debit. Balances are always the sum of the journal, so they stay auditable. Manual debits can never push a balance negative.</li>
+<li><strong>Guardrails at scheduling.</strong> Shifts can be created only inside an active ledger period with enough remaining hours (remaining minus hours already reserved), in both the internal scheduling tool and the caregiver app, with a clear error when they cannot.</li>
+<li><strong>Guardrails at payment.</strong> Invoices pay only when the correct period has enough hours. Otherwise an automatic insufficient-hours validation blocks payment.</li>
+<li><strong>Eligibility lifecycle.</strong> For health-plan members, extensions add periods. Terminations shorten the current period, zero out future balances, auto-cancel future confirmed shifts with notifications, and generate a high-priority follow-up task for the care team. Reactivations restore coverage and block shifts during the gap.</li>
+<li><strong>Ops visibility.</strong> A Vouchers view in the internal ops dashboard shows each member's vouchers, period ledgers (starting, used, credits, remaining), and a searchable transaction history, plus an Adjust Ledger Balance flow with required notes, limits, and validation.</li>
+<li><strong>Migration and backfill.</strong> Balances are rebuilt from paid shift history for each program and period, with a defined cut-off date.</li></ul></div>
+<div class="block"><h3>Success measures</h3>
+<div class="goals">
+<div class="goal"><div class="k">Success measure</div><p>100% of programs migrated to the ledger</p></div>
+<div class="goal"><div class="k">Success measure</div><p>Overutilization baseline established</p></div>
+</div>
+<p class="note">Outcome metrics to be added.</p></div>
+<div class="callout"><h3>What it shows</h3>
+<p>I can translate payer authorization rules into a financial-grade data model, design guardrails that prevent revenue leakage before it happens, and coordinate one change across scheduling, payment, mobile, and ops tools.</p></div>
+<div class="block"><h3>Skills</h3><div class="tags"><span>Benefits &amp; authorization modeling</span><span>Revenue integrity</span><span>Eligibility workflows</span><span>Internal tooling</span><span>PRD &amp; business rules</span><span>Cross-platform delivery</span></div></div>
+</div></div></section>
 <section style="padding-top:0"><div class="wrap"><div class="eyebrow">More work</div><h2>More case studies</h2>
-<div class="more"><div class="ph">Case study #2 — coming soon</div><div class="ph">Case study #3 — coming soon</div></div></div></section>
+<div class="more"><div class="ph">Case study #3 — coming soon</div></div></div></section>
 <section id="about" style="padding-top:0"><div class="wrap about"><div class="eyebrow">About</div><h2>About me</h2><p>[2–3 sentences about you — we'll write this next]</p></div></section>
 <footer id="contact"><div class="wrap"><h2>Hiring for healthtech product? Let's talk.</h2>
 <div class="btns"><a class="btn" href="#">[email]</a><a class="btn o" href="#">[LinkedIn]</a><a class="btn o" href="#">[Résumé PDF]</a></div>
